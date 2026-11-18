@@ -1,9 +1,27 @@
 const form = document.getElementById("formProduto");
 const lista = document.getElementById("listaProdutos");
 
-let produtos = [];
+async function atualizarLista() {
+    const resposta = await fetch("/produtos");
+    const produtos = await resposta.json();
 
-form.addEventListener("submit", function(event) {
+    lista.innerHTML = "";
+
+    produtos.forEach(function(produto) {
+        const linha = document.createElement("tr");
+
+        linha.innerHTML = `
+            <td>${produto.nome}</td>
+            <td>${produto.quantidade}</td>
+            <td>R$ ${produto.preco.toFixed(2)}</td>
+            <td>-</td>
+        `;
+
+        lista.appendChild(linha);
+    });
+}
+
+form.addEventListener("submit", async function(event) {
     event.preventDefault();
 
     const nome = document.getElementById("nome").value;
@@ -15,40 +33,25 @@ form.addEventListener("submit", function(event) {
         return;
     }
 
-    const produto = {
-        nome: nome,
-        quantidade: quantidade,
-        preco: preco
-    };
+    const resposta = await fetch("/produtos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            nome: nome,
+            quantidade: quantidade,
+            preco: preco
+        })
+    });
 
-    produtos.push(produto);
-
-    atualizarLista();
-    form.reset();
+    if (resposta.ok) {
+        alert("Produto cadastrado com sucesso!");
+        form.reset();
+        atualizarLista();
+    } else {
+        alert("Erro ao cadastrar produto.");
+    }
 });
 
-function atualizarLista() {
-    lista.innerHTML = "";
-
-    produtos.forEach(function(produto, indice) {
-        const linha = document.createElement("tr");
-
-        linha.innerHTML = `
-            <td>${produto.nome}</td>
-            <td>${produto.quantidade}</td>
-            <td>R$ ${produto.preco.toFixed(2)}</td>
-            <td>
-                <button onclick="removerProduto(${indice})">
-                    Remover
-                </button>
-            </td>
-        `;
-
-        lista.appendChild(linha);
-    });
-}
-
-function removerProduto(indice) {
-    produtos.splice(indice, 1);
-    atualizarLista();
-}
+atualizarLista();
