@@ -1,7 +1,11 @@
+
 import sqlite3
 
+DB_PATH = "estoque.db"
+
+
 def conectar():
-    conexao = sqlite3.connect("estoque.db")
+    conexao = sqlite3.connect(DB_PATH)
     conexao.row_factory = sqlite3.Row
     return conexao
 
